@@ -3,9 +3,18 @@ package com.kce.mapper;
 import com.kce.dto.DoctorDto;
 import com.kce.entity.Doctor;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class DoctorMapper {
 
 	public static DoctorDto mapToDoctorDto(Doctor doctor) {
+		// Convert List<String> to comma-separated String
+		String languageStr = doctor.getLanguages() != null
+				? String.join(", ", doctor.getLanguages())
+				: null;
+
 		return new DoctorDto(
 				doctor.getDoctorId(),
 				doctor.getNmrId(),
@@ -18,13 +27,20 @@ public class DoctorMapper {
 				doctor.getBio(),
 				doctor.getEducation(),
 				doctor.getExperience(),
-				doctor.getLanguages(),
+				languageStr, // 🔁 Set as String
 				doctor.getPhotoUrl(),
 				doctor.getDepartmentId()
-				
-				);
+		);
 	}
+
 	public static Doctor mapToDoctor(DoctorDto doctorDto) {
+		// Convert comma-separated String to List<String>
+		List<String> languageList = doctorDto.getLanguages() != null
+				? Arrays.stream(doctorDto.getLanguages().split(","))
+				.map(String::trim)
+				.collect(Collectors.toList())
+				: null;
+
 		return new Doctor(
 				doctorDto.getDoctorId(),
 				doctorDto.getNmrId(),
@@ -37,9 +53,9 @@ public class DoctorMapper {
 				doctorDto.getBio(),
 				doctorDto.getEducation(),
 				doctorDto.getExperience(),
-				doctorDto.getLanguages(),
+				languageList, // 🔁 Set as List<String>
 				doctorDto.getPhotoUrl(),
 				doctorDto.getDepartmentId()
-				);
+		);
 	}
 }

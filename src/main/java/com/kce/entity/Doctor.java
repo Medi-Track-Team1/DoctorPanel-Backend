@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import java.util.List;
 
 @Getter
 @Setter
@@ -28,7 +28,7 @@ public class Doctor {
     private String bio;
     private String education;
     private String experience;
-    private String languages;
+    private List<String> languages;
     private String photoUrl;
     private String departmentId;
     

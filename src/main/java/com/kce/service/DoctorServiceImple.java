@@ -10,15 +10,15 @@ import com.kce.mapper.DoctorMapper;
 import com.kce.util.DoctorIdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.kce.config.CloudinaryConfig.*;
-
 import org.springframework.web.multipart.MultipartFile;
 import com.kce.repository.DoctorRepository;
 import com.kce.repository.DepartmentRepository;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class DoctorServiceImple implements DoctorService {
@@ -42,13 +42,23 @@ public class DoctorServiceImple implements DoctorService {
 
         // 🔍 Get department by name (specialty)
         Department department = departmentRepository
-        	    .findByDepartmentId(doctorDto.getDepartmentId())
-        	    .orElseThrow(() -> new ResourceNotFoundException("Department not found for ID: " + doctorDto.getDepartmentId()));
+                .findByDepartmentId(doctorDto.getDepartmentId())
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found for ID: " + doctorDto.getDepartmentId()));
 
-        	doctor.setDepartmentId(department.getDepartmentId());
-        	doctor.setSpecialty(department.getName()); // <-- Add this line here
+        doctor.setDepartmentId(department.getDepartmentId());
+        doctor.setSpecialty(department.getName());
 
-doctor.setStatus(doctorDto.getStatus());
+        // Convert comma-separated languages string to list
+        if (doctorDto.getLanguages() != null && !doctorDto.getLanguages().isEmpty()) {
+            List<String> languageList = Arrays.stream(doctorDto.getLanguages().split(","))
+                    .map(String::trim)
+                    .collect(Collectors.toList());
+            doctor.setLanguages(languageList);
+        }
+
+
+        doctor.setStatus(doctorDto.getStatus());
+
         // ☁️ Upload profile photo if available
         if (profilePhoto != null && !profilePhoto.isEmpty()) {
             try {
@@ -71,6 +81,7 @@ doctor.setStatus(doctorDto.getStatus());
 
         return DoctorMapper.mapToDoctorDto(doctor);
     }
+
     @Override
     public List<DoctorDto> getAllDoctors() {
         return doctorRepository.findAll()
@@ -78,5 +89,11 @@ doctor.setStatus(doctorDto.getStatus());
                 .map(DoctorMapper::mapToDoctorDto)
                 .toList();
     }
-
+    @Override
+    public List<String> getDoctorNamesBySpecialty(String specialty) {
+        return doctorRepository.findBySpecialtyIgnoreCase(specialty)
+                .stream()
+                .map(Doctor::getDoctorName)
+                .collect(Collectors.toList());
+    }
 }

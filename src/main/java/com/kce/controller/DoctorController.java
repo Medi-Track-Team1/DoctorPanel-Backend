@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +38,15 @@ public ResponseEntity<DoctorDto> createdoctor(
     DoctorDto savedDoctor = doctorService.createDoctor(doctorDto, profilePhoto);
     return new ResponseEntity<>(savedDoctor, HttpStatus.CREATED);
 }
-	
+	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<DoctorDto> createDoctorJson(@RequestBody DoctorDto doctorDto) {
+		return new ResponseEntity<>(doctorService.createDoctor(doctorDto, null), HttpStatus.CREATED);
+	}
+
+	@GetMapping("/names/by-specialty")
+	public ResponseEntity<List<String>> getDoctorNamesBySpecialty(@RequestParam String specialty) {
+		return ResponseEntity.ok(doctorService.getDoctorNamesBySpecialty(specialty));
+	}
 	@GetMapping("/{id}")
 	public ResponseEntity<DoctorDto> getDoctorById(@PathVariable("id") String doctorId) {
 	    DoctorDto doctorDto = doctorService.getDoctorById(doctorId);

@@ -11,5 +11,5 @@ public interface DoctorService {
 	
 	DoctorDto getDoctorById(String doctorId);
 	List<DoctorDto> getAllDoctors();
-
+	List<String> getDoctorNamesBySpecialty(String specialty);
 }
