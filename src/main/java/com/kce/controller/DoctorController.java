@@ -36,9 +36,9 @@ public ResponseEntity<DoctorDto> createdoctor(
 		return new ResponseEntity<>(doctorService.createDoctor(doctorDto, null), HttpStatus.CREATED);
 	}
 
-	@GetMapping("/names/by-specialty")
-	public ResponseEntity<List<String>> getDoctorNamesBySpecialty(@RequestParam String specialty) {
-		return ResponseEntity.ok(doctorService.getDoctorNamesBySpecialty(specialty));
+	@GetMapping("/by-specialty")
+	public ResponseEntity<List<DoctorDto>> getDoctorsBySpecialty(@RequestParam String specialty) {
+		return ResponseEntity.ok(doctorService.getDoctorsBySpecialty(specialty));
 	}
 	@GetMapping("/{id}")
 	public ResponseEntity<DoctorDto> getDoctorById(@PathVariable("id") String doctorId) {

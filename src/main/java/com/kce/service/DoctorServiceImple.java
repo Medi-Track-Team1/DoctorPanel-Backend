@@ -90,11 +90,13 @@ public class DoctorServiceImple implements DoctorService {
                 .map(DoctorMapper::mapToDoctorDto)
                 .toList();
     }
+
+
     @Override
-    public List<String> getDoctorNamesBySpecialty(String specialty) {
+    public List<DoctorDto> getDoctorsBySpecialty(String specialty) {
         return doctorRepository.findBySpecialtyIgnoreCase(specialty)
                 .stream()
-                .map(Doctor::getDoctorName)
+                .map(DoctorMapper::mapToDoctorDto)
                 .collect(Collectors.toList());
     }
     @Override

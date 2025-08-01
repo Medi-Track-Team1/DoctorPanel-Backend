@@ -11,7 +11,7 @@ public interface DoctorService {
 
 	List<DoctorDto> getAllDoctors();
 
-	List<String> getDoctorNamesBySpecialty(String specialty);
+	List<DoctorDto> getDoctorsBySpecialty(String specialty);
 
 	DoctorDto updateDoctor(String doctorId, DoctorDto doctorDto); // 🆕 Added
 
