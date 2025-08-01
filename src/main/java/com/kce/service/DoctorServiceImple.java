@@ -148,5 +148,10 @@ public class DoctorServiceImple implements DoctorService {
 
         doctorRepository.delete(doctor);
     }
+    @Override
+    public long getDoctorCount() {
+        return doctorRepository.count();
+    }
+
 
 }

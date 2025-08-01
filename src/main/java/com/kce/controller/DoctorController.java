@@ -63,6 +63,11 @@ public ResponseEntity<DoctorDto> createdoctor(
 		doctorService.deleteDoctor(doctorId);
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
+	@GetMapping("/count")
+	public ResponseEntity<Long> getDoctorCount() {
+		long count = doctorService.getDoctorCount();
+		return ResponseEntity.ok(count);
+	}
 
-	
+
 }

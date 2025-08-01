@@ -11,4 +11,5 @@ import com.kce.entity.Doctor;
 public interface DoctorRepository extends MongoRepository<Doctor,String>{
 	Optional<Doctor> findByDoctorId(String doctorId);
 	List<Doctor> findBySpecialtyIgnoreCase(String specialty);
+	long count();
 }

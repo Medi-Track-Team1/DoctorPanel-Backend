@@ -16,4 +16,5 @@ public interface DoctorService {
 	DoctorDto updateDoctor(String doctorId, DoctorDto doctorDto); // 🆕 Added
 
 	void deleteDoctor(String doctorId); // 🆕 Added
+	long getDoctorCount();
 }
