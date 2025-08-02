@@ -4,43 +4,56 @@ import com.kce.dto.AppointmentDto;
 import com.kce.entity.Appointments;
 
 public class AppointmentMapper {
-    public static AppointmentDto mapToAppointmentDto(Appointments appointment) {
-        return new AppointmentDto(
-            appointment.getAppointmentId(),
-            appointment.getPatientId(),
-            appointment.getPatientName(),
-            appointment.getAge(),
-            appointment.getPhone(),
-            appointment.getEmail(),
-            
-            appointment.getDepartment(),
-            appointment.getDoctorId(),
-            appointment.getDate(),
-            appointment.getTime(),
 
-            appointment.getReason(),
-            appointment.getNotes(),
-            appointment.getStatus()
-        );
+    public static AppointmentDto mapToAppointmentDto(Appointments appointment) {
+        if (appointment == null) {
+            return null;
+        }
+
+        AppointmentDto dto = new AppointmentDto();
+
+        // CRITICAL: Map the business logic appointmentId, NOT the MongoDB _id
+        dto.setAppointmentId(appointment.getAppointmentId()); // Business ID like "apt_1008"
+        dto.setPatientId(appointment.getPatientId());
+        dto.setPatientName(appointment.getPatientName());
+        dto.setAge(appointment.getAge());
+        dto.setPhone(appointment.getPhone());
+        dto.setEmail(appointment.getEmail());
+        dto.setDepartment(appointment.getDepartment());
+        dto.setDoctorId(appointment.getDoctorId());
+        dto.setDate(appointment.getDate());
+        dto.setTime(appointment.getTime());
+        dto.setReason(appointment.getReason());
+        dto.setNotes(appointment.getNotes());
+        dto.setStatus(appointment.getStatus());
+
+        return dto;
     }
 
-    public static Appointments mapToAppointment(AppointmentDto dto) {
-        return new Appointments(
-            dto.getAppointmentId(),
-            dto.getPatientId(),
-            dto.getPatientName(),
-            dto.getAge(),
-            dto.getPhone(),
-            dto.getEmail(),
-           
-            dto.getDepartment(),
-            dto.getDoctorId(),
-            dto.getDate(),
-            dto.getTime(),
+    public static Appointments mapToAppointment(AppointmentDto appointmentDto) {
+        if (appointmentDto == null) {
+            return null;
+        }
 
-            dto.getReason(),
-            dto.getNotes(),
-            dto.getStatus()
-        );
+        Appointments appointment = new Appointments();
+
+        // Map the business logic appointmentId
+        appointment.setAppointmentId(appointmentDto.getAppointmentId()); // Business ID like "apt_1008"
+        appointment.setPatientId(appointmentDto.getPatientId());
+        appointment.setPatientName(appointmentDto.getPatientName());
+        appointment.setAge(appointmentDto.getAge());
+        appointment.setPhone(appointmentDto.getPhone());
+        appointment.setEmail(appointmentDto.getEmail());
+        appointment.setDepartment(appointmentDto.getDepartment());
+        appointment.setDoctorId(appointmentDto.getDoctorId());
+        appointment.setDate(appointmentDto.getDate());
+        appointment.setTime(appointmentDto.getTime());
+        appointment.setReason(appointmentDto.getReason());
+        appointment.setNotes(appointmentDto.getNotes());
+        appointment.setStatus(appointmentDto.getStatus());
+
+        // Note: The MongoDB _id (appointment.getId()) will be auto-generated
+
+        return appointment;
     }
 }

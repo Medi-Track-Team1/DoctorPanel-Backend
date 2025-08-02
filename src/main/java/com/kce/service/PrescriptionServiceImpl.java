@@ -46,9 +46,10 @@ public class PrescriptionServiceImpl implements PrescriptionService {
             // Generate prescription ID
             String prescriptionId = generatePrescriptionId();
 
-            // Set prescription details - FORCE the appointmentId to be the original one
+            // CRITICAL FIX: Always use the original appointmentId from frontend
+            // Don't let the appointment service overwrite it
             prescriptionDto.setPrescriptionId(prescriptionId);
-            prescriptionDto.setAppointmentId(originalAppointmentId); // FORCE original appointmentId
+            prescriptionDto.setAppointmentId(originalAppointmentId); // Keep original business logic ID
             prescriptionDto.setPatientId(appointment.getPatientId());
             prescriptionDto.setPatientName(appointment.getPatientName());
             prescriptionDto.setCreatedAt(LocalDateTime.now());
@@ -65,6 +66,9 @@ public class PrescriptionServiceImpl implements PrescriptionService {
             // Convert to entity and save
             Prescription prescription = PrescriptionMapper.mapToPrescription(prescriptionDto);
 
+            // ADDITIONAL SAFETY CHECK: Ensure the entity has the correct appointmentId
+            prescription.setAppointmentId(originalAppointmentId);
+
             // Log the entity before saving
             System.out.println("Prescription entity appointmentId before save: " + prescription.getAppointmentId());
 
@@ -73,7 +77,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
             // Log after saving
             System.out.println("Saved prescription appointmentId: " + savedPrescription.getAppointmentId());
 
-            // Mark appointment as completed
+            // Mark appointment as completed using the original appointmentId
             appointmentService.markCompleted(originalAppointmentId);
 
             return PrescriptionMapper.mapToPrescriptionDto(savedPrescription);
@@ -84,6 +88,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
             throw new RuntimeException("Failed to create prescription: " + e.getMessage(), e);
         }
     }
+
     @Override
     public PrescriptionDto getPrescriptionById(String prescriptionId) {
         Prescription prescription = prescriptionRepository.findById(prescriptionId)
