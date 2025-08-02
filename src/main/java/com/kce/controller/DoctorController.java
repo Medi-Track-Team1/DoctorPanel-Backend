@@ -15,7 +15,18 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @RestController
+
 @RequestMapping("/api/doctor")
+@CrossOrigin(
+		origins = {
+				"http://localhost:5174",
+				"http://localhost:5175"
+
+		},
+		allowedHeaders = "*",
+		allowCredentials = "true",
+		methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS}
+)
 public class DoctorController {
 @Autowired
 	
