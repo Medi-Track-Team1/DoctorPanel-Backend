@@ -1,88 +1,96 @@
 package com.kce.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.kce.dto.AppointmentDto;
+import com.kce.entity.Appointments;
+import com.kce.repository.AppointmentRepository;
+import com.kce.mapper.AppointmentMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.kce.dto.AppointmentDto;
-
-import com.kce.entity.Appointments;
-import com.kce.mapper.AppointmentMapper;
-import com.kce.repository.AppointmentRepository;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
-public class AppointmentServiceImpl implements AppointmentService{
+public class AppointmentServiceImpl implements AppointmentService {
 
 	@Autowired
 	private AppointmentRepository appointmentRepository;
 
 	@Override
 	public List<AppointmentDto> getAllAppointments() {
-		List<Appointments> appointments=appointmentRepository.findAll();
-		return appointments.stream().map((appointment)->AppointmentMapper.mapToAppointmentDto(appointment)).collect(Collectors.toList());
+		List<Appointments> appointments = appointmentRepository.findAll();
+		return appointments.stream()
+				.map(AppointmentMapper::mapToAppointmentDto)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public AppointmentDto createAppointment(AppointmentDto appointmentDto) {
-	    Appointments appointment = AppointmentMapper.mapToAppointment(appointmentDto);
-
-	    // ✅ Set default status before saving
-	    appointment.setStatus("pending");
-
-	    Appointments createdAppointment = null;
-	    try {
-	        createdAppointment = appointmentRepository.save(appointment);
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
-
-	    return AppointmentMapper.mapToAppointmentDto(createdAppointment);
-	}
-
-
-	
-
-	@Override
-	public AppointmentDto markCompleted(String appointmentId) {
-		Appointments appointment = appointmentRepository.findById(appointmentId)
-		        .orElseThrow(() -> new RuntimeException("Appointment not found"));
-		    appointment.setStatus("completed");
-		    Appointments updated = appointmentRepository.save(appointment);
-		    return AppointmentMapper.mapToAppointmentDto(updated); 
+		Appointments appointment = AppointmentMapper.mapToAppointment(appointmentDto);
+		Appointments savedAppointment = appointmentRepository.save(appointment);
+		return AppointmentMapper.mapToAppointmentDto(savedAppointment);
 	}
 
 	@Override
 	public List<AppointmentDto> getAppointmentsByDoctorId(String doctorId) {
-	    List<Appointments> appointments = appointmentRepository.findByDoctorId(doctorId);
-	    return appointments.stream()
-	        .map(AppointmentMapper::mapToAppointmentDto)
-	        .collect(Collectors.toList());
+		List<Appointments> appointments = appointmentRepository.findByDoctorId(doctorId);
+		return appointments.stream()
+				.map(AppointmentMapper::mapToAppointmentDto)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<AppointmentDto> getAppointmentsByDoctorIdAndStatus(String doctorId, String status) {
-	    List<Appointments> filtered = appointmentRepository.findByDoctorIdAndStatus(doctorId, status);
-	    return filtered.stream()
-	        .map(AppointmentMapper::mapToAppointmentDto)
-	        .collect(Collectors.toList());
+		List<Appointments> appointments = appointmentRepository.findByDoctorIdAndStatus(doctorId, status);
+		return appointments.stream()
+				.map(AppointmentMapper::mapToAppointmentDto)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public List<AppointmentDto> getCompletedAppointmentsByDoctorId(String doctorId) {
-	    List<Appointments> completed = appointmentRepository.findByDoctorIdAndStatus(doctorId, "completed");
-	    return completed.stream()
-	        .map(AppointmentMapper::mapToAppointmentDto)
-	        .collect(Collectors.toList());
+		return getAppointmentsByDoctorIdAndStatus(doctorId, "completed");
 	}
+
+	@Override
+	public AppointmentDto markCompleted(String appointmentId) {
+		System.out.println("Marking appointment as completed: " + appointmentId);
+
+		// Find by business logic appointmentId
+		Appointments appointment = appointmentRepository.findByAppointmentId(appointmentId)
+				.orElseThrow(() -> new RuntimeException("Appointment not found with appointmentId: " + appointmentId));
+
+		appointment.setStatus("completed");
+		Appointments savedAppointment = appointmentRepository.save(appointment);
+
+		System.out.println("Successfully marked appointment " + appointmentId + " as completed");
+
+		return AppointmentMapper.mapToAppointmentDto(savedAppointment);
+	}
+
 	@Override
 	public AppointmentDto getAppointmentForDoctor(String doctorId, String appointmentId) {
-	    Appointments appointment = appointmentRepository.findByAppointmentIdAndDoctorId(appointmentId, doctorId)
-	        .orElseThrow(() -> new RuntimeException("Appointment not found for doctorId: " + doctorId));
-	    return AppointmentMapper.mapToAppointmentDto(appointment);
+		System.out.println("=== APPOINTMENT SERVICE DEBUG ===");
+		System.out.println("Looking for appointment with:");
+		System.out.println("- appointmentId: " + appointmentId);
+		System.out.println("- doctorId: " + doctorId);
+
+		// Find by business logic appointmentId and doctorId
+		Appointments appointment = appointmentRepository.findByAppointmentIdAndDoctorId(appointmentId, doctorId)
+				.orElseThrow(() -> new RuntimeException("Appointment not found with appointmentId: " + appointmentId + " and doctorId: " + doctorId));
+
+		System.out.println("Found appointment:");
+		System.out.println("- MongoDB _id: " + appointment.getId());
+		System.out.println("- Business appointmentId: " + appointment.getAppointmentId());
+		System.out.println("- Patient ID: " + appointment.getPatientId());
+		System.out.println("- Patient Name: " + appointment.getPatientName());
+
+		// Convert to DTO
+		AppointmentDto dto = AppointmentMapper.mapToAppointmentDto(appointment);
+
+		System.out.println("Returning DTO with appointmentId: " + dto.getAppointmentId());
+		System.out.println("=== END APPOINTMENT SERVICE DEBUG ===");
+
+		return dto;
 	}
-
-	
-
 }
