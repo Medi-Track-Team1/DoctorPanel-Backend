@@ -24,7 +24,8 @@ public class CorsConfig {
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/", config);
+        // Apply CORS config to all paths
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 }
