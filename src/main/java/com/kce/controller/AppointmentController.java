@@ -11,6 +11,16 @@ import com.kce.dto.AppointmentDto;
 import com.kce.service.AppointmentService;
 
 @RestController
+@CrossOrigin(
+        origins = {
+                "http://localhost:5174",
+                "http://localhost:5175"
+
+        },
+        allowedHeaders = "*",
+        allowCredentials = "true",
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS}
+)
 @RequestMapping("/api/doctor") // ✅ This becomes the prefix for ALL endpoints
 public class AppointmentController {
 
