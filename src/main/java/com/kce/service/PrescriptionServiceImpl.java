@@ -98,10 +98,12 @@ public class PrescriptionServiceImpl implements PrescriptionService {
 
     @Override
     public PrescriptionDto getPrescriptionByAppointmentId(String appointmentId) {
+        System.out.println("📌 Looking up prescription for appointmentId: [" + appointmentId + "]");
         Prescription prescription = prescriptionRepository.findByAppointmentId(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Prescription not found for appointment ID: " + appointmentId));
         return PrescriptionMapper.mapToPrescriptionDto(prescription);
     }
+
 
     @Override
     public List<PrescriptionDto> getPrescriptionsByPatientId(String patientId) {
