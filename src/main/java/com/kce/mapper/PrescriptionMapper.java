@@ -20,8 +20,7 @@ public class PrescriptionMapper {
         dto.setPatientName(prescription.getPatientName());
         dto.setDietPlan(prescription.getDietPlan());
         dto.setRecommendedTests(prescription.getRecommendedTests());
-        dto.setCreatedAt(prescription.getCreatedAt());
-        dto.setUpdatedAt(prescription.getUpdatedAt());
+
         dto.setStatus(prescription.getStatus());
 
         // Map medicines
@@ -58,8 +57,7 @@ public class PrescriptionMapper {
         prescription.setPatientName(prescriptionDto.getPatientName());
         prescription.setDietPlan(prescriptionDto.getDietPlan());
         prescription.setRecommendedTests(prescriptionDto.getRecommendedTests());
-        prescription.setCreatedAt(prescriptionDto.getCreatedAt());
-        prescription.setUpdatedAt(prescriptionDto.getUpdatedAt());
+
         prescription.setStatus(prescriptionDto.getStatus());
 
         // Map medicines

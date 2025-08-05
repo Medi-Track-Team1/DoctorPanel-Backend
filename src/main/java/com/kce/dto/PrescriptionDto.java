@@ -25,8 +25,7 @@ public class PrescriptionDto {
     private String dietPlan;
     private List<String> recommendedTests;
     
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+
     private String status;
     
     @Getter

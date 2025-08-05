@@ -53,8 +53,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
             prescriptionDto.setAppointmentId(originalAppointmentId); // Keep original business logic ID
             prescriptionDto.setPatientId(appointment.getPatientId());
             prescriptionDto.setPatientName(appointment.getPatientName());
-            prescriptionDto.setCreatedAt(LocalDateTime.now());
-            prescriptionDto.setUpdatedAt(LocalDateTime.now());
+
             prescriptionDto.setStatus("active");
 
             // Final log before saving
@@ -140,8 +139,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
 
         // Update fields
         prescriptionDto.setPrescriptionId(prescriptionId);
-        prescriptionDto.setCreatedAt(existingPrescription.getCreatedAt());
-        prescriptionDto.setUpdatedAt(LocalDateTime.now());
+
 
         Prescription prescription = PrescriptionMapper.mapToPrescription(prescriptionDto);
         Prescription updatedPrescription = prescriptionRepository.save(prescription);
