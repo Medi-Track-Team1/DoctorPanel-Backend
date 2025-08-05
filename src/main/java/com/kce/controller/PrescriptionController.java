@@ -19,13 +19,19 @@ import java.util.HashMap;
         origins = {
                 "http://localhost:5174",
                 "http://localhost:5175",
-                "https://your-frontend-domain.com", // Add your actual frontend domain
-                "*" // Temporarily allow all origins for debugging (remove in production)
+                "https://your-frontend-domain.com"
         },
         allowedHeaders = "*",
         allowCredentials = "true",
-        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS}
+        methods = {
+                RequestMethod.GET,
+                RequestMethod.POST,
+                RequestMethod.PUT,
+                RequestMethod.DELETE,
+                RequestMethod.OPTIONS
+        }
 )
+
 public class PrescriptionController {
 
     private static final Logger logger = LoggerFactory.getLogger(PrescriptionController.class);
