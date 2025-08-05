@@ -1,5 +1,6 @@
 package com.kce.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kce.dto.AppointmentDto;
 import com.kce.dto.PrescriptionDto;
 import com.kce.entity.Prescription;
@@ -71,8 +72,11 @@ public class PrescriptionServiceImpl implements PrescriptionService {
 
             // Log the entity before saving
             System.out.println("Prescription entity appointmentId before save: " + prescription.getAppointmentId());
-
+            System.out.println("🟡 Before saving to MongoDB:");
+            System.out.println(new ObjectMapper().writeValueAsString(prescription)); // Jackson
             Prescription savedPrescription = prescriptionRepository.save(prescription);
+            System.out.println("✅ After saving to MongoDB:");
+            System.out.println(new ObjectMapper().writeValueAsString(savedPrescription));
 
             // Log after saving
             System.out.println("Saved prescription appointmentId: " + savedPrescription.getAppointmentId());
@@ -98,10 +102,12 @@ public class PrescriptionServiceImpl implements PrescriptionService {
 
     @Override
     public PrescriptionDto getPrescriptionByAppointmentId(String appointmentId) {
+        System.out.println("📌 Looking up prescription for appointmentId: [" + appointmentId + "]");
         Prescription prescription = prescriptionRepository.findByAppointmentId(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Prescription not found for appointment ID: " + appointmentId));
         return PrescriptionMapper.mapToPrescriptionDto(prescription);
     }
+
 
     @Override
     public List<PrescriptionDto> getPrescriptionsByPatientId(String patientId) {
