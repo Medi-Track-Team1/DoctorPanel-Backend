@@ -22,71 +22,82 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     @Autowired
     private AppointmentService appointmentService;
 
+
+    @Autowired
+    private ExternalAppointmentService externalAppointmentService; // ADD THIS
+
     @Override
     public PrescriptionDto createPrescription(PrescriptionDto prescriptionDto) {
         try {
-            // Store the original appointmentId from frontend (e.g., "apt_1008")
             String originalAppointmentId = prescriptionDto.getAppointmentId();
+            String doctorId = prescriptionDto.getDoctorId();
 
-            // Log the received appointmentId for debugging
-            System.out.println("Received appointmentId from frontend: " + originalAppointmentId);
-            System.out.println("Received doctorId: " + prescriptionDto.getDoctorId());
+            System.out.println("🔍 Creating prescription for appointmentId: " + originalAppointmentId + ", doctorId: " + doctorId);
 
-            // Get appointment details using your existing method
-            AppointmentDto appointment = appointmentService.getAppointmentForDoctor(
-                    prescriptionDto.getDoctorId(),
-                    originalAppointmentId
-            );
+            AppointmentDto appointment = null;
 
-            // Log what we got back from the appointment service
-            System.out.println("Retrieved appointment: " + appointment);
-            System.out.println("Appointment ID from service: " + appointment.getAppointmentId());
-            System.out.println("Patient ID: " + appointment.getPatientId());
-            System.out.println("Patient Name: " + appointment.getPatientName());
+            // Try to get appointment from external MediTrack system first
+            try {
+                appointment = externalAppointmentService.getAppointmentFromMeditrack(originalAppointmentId);
+                System.out.println("✅ Found appointment in external MediTrack system");
+
+                // Verify the doctor matches
+                if (!doctorId.equals(appointment.getDoctorId())) {
+                    throw new RuntimeException("Doctor ID mismatch. Expected: " + doctorId + ", Found: " + appointment.getDoctorId());
+                }
+
+            } catch (Exception externalException) {
+                System.err.println("⚠️ Appointment not found in external MediTrack system: " + externalException.getMessage());
+
+                // Fallback: Try local KCE system
+                try {
+                    appointment = appointmentService.getAppointmentForDoctor(doctorId, originalAppointmentId);
+                    System.out.println("✅ Found appointment in local KCE system");
+                } catch (Exception localException) {
+                    System.err.println("❌ Appointment not found in local system either: " + localException.getMessage());
+                    throw new RuntimeException("Appointment not found with ID: " + originalAppointmentId + " for doctor: " + doctorId +
+                            ". Checked both external MediTrack and local KCE systems.");
+                }
+            }
 
             // Generate prescription ID
             String prescriptionId = generatePrescriptionId();
 
-            // CRITICAL FIX: Always use the original appointmentId from frontend
-            // Don't let the appointment service overwrite it
+            // Set prescription details
             prescriptionDto.setPrescriptionId(prescriptionId);
-            prescriptionDto.setAppointmentId(originalAppointmentId); // Keep original business logic ID
+            prescriptionDto.setAppointmentId(originalAppointmentId);
             prescriptionDto.setPatientId(appointment.getPatientId());
             prescriptionDto.setPatientName(appointment.getPatientName());
-
             prescriptionDto.setStatus("active");
 
-            // Final log before saving
-            System.out.println("Final prescription DTO before saving:");
-            System.out.println("- PrescriptionId: " + prescriptionDto.getPrescriptionId());
-            System.out.println("- AppointmentId: " + prescriptionDto.getAppointmentId());
-            System.out.println("- PatientId: " + prescriptionDto.getPatientId());
-            System.out.println("- DoctorId: " + prescriptionDto.getDoctorId());
+            System.out.println("📝 Final prescription details:");
+            System.out.println("   - PrescriptionId: " + prescriptionDto.getPrescriptionId());
+            System.out.println("   - AppointmentId: " + prescriptionDto.getAppointmentId());
+            System.out.println("   - PatientId: " + prescriptionDto.getPatientId());
+            System.out.println("   - PatientName: " + prescriptionDto.getPatientName());
 
             // Convert to entity and save
             Prescription prescription = PrescriptionMapper.mapToPrescription(prescriptionDto);
-
-            // ADDITIONAL SAFETY CHECK: Ensure the entity has the correct appointmentId
             prescription.setAppointmentId(originalAppointmentId);
 
-            // Log the entity before saving
-            System.out.println("Prescription entity appointmentId before save: " + prescription.getAppointmentId());
-            System.out.println("🟡 Before saving to MongoDB:");
-            System.out.println(new ObjectMapper().writeValueAsString(prescription)); // Jackson
+            System.out.println("💾 Saving prescription to database...");
             Prescription savedPrescription = prescriptionRepository.save(prescription);
-            System.out.println("✅ After saving to MongoDB:");
-            System.out.println(new ObjectMapper().writeValueAsString(savedPrescription));
 
-            // Log after saving
-            System.out.println("Saved prescription appointmentId: " + savedPrescription.getAppointmentId());
+            System.out.println("✅ Prescription saved successfully with ID: " + savedPrescription.getPrescriptionId());
 
-            // Mark appointment as completed using the original appointmentId
-            appointmentService.markCompleted(originalAppointmentId);
+            // Mark appointment as completed in external system
+            try {
+                externalAppointmentService.markAppointmentCompleted(originalAppointmentId);
+                System.out.println("✅ Marked appointment as completed in external MediTrack system");
+            } catch (Exception markException) {
+                System.err.println("⚠️ Could not mark appointment as completed: " + markException.getMessage());
+                // Don't throw exception here as prescription creation was successful
+            }
 
             return PrescriptionMapper.mapToPrescriptionDto(savedPrescription);
 
         } catch (Exception e) {
-            System.err.println("Error creating prescription: " + e.getMessage());
+            System.err.println("❌ Error creating prescription: " + e.getMessage());
             e.printStackTrace();
             throw new RuntimeException("Failed to create prescription: " + e.getMessage(), e);
         }
