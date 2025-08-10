@@ -1,6 +1,8 @@
 package com.kce.service;
 
 import java.util.List;
+
+import com.kce.dto.TopDoctorDto;
 import org.springframework.web.multipart.MultipartFile;
 import com.kce.dto.DoctorDto;
 
@@ -17,4 +19,5 @@ public interface DoctorService {
 
 	void deleteDoctor(String doctorId); // 🆕 Added
 	long getDoctorCount();
+	List<TopDoctorDto> getTop5DoctorsByPrescriptions();
 }

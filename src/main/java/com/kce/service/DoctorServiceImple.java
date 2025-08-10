@@ -3,10 +3,12 @@ package com.kce.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.kce.dto.DoctorDto;
+import com.kce.dto.TopDoctorDto;
 import com.kce.entity.Department;
 import com.kce.entity.Doctor;
 import com.kce.exception.ResourceNotFoundException;
 import com.kce.mapper.DoctorMapper;
+import com.kce.repository.PrescriptionRepository;
 import com.kce.util.DoctorIdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import com.kce.repository.DoctorRepository;
 import com.kce.repository.DepartmentRepository;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -28,9 +31,11 @@ public class DoctorServiceImple implements DoctorService {
 
     @Autowired
     private DepartmentRepository departmentRepository;
-
+    @Autowired
+    private PrescriptionRepository prescriptionRepository;
     @Autowired
     private Cloudinary cloudinary;
+
 
     @Override
     public DoctorDto createDoctor(DoctorDto doctorDto, MultipartFile profilePhoto) {
@@ -99,6 +104,7 @@ public class DoctorServiceImple implements DoctorService {
                 .map(DoctorMapper::mapToDoctorDto)
                 .collect(Collectors.toList());
     }
+
     @Override
     public DoctorDto updateDoctor(String doctorId, DoctorDto doctorDto) {
         // 🔍 Fetch the existing doctor by doctorId (this ensures we get the MongoDB _id too)
@@ -140,7 +146,6 @@ public class DoctorServiceImple implements DoctorService {
     }
 
 
-
     @Override
     public void deleteDoctor(String doctorId) {
         Doctor doctor = doctorRepository.findByDoctorId(doctorId)
@@ -148,10 +153,90 @@ public class DoctorServiceImple implements DoctorService {
 
         doctorRepository.delete(doctor);
     }
+
     @Override
     public long getDoctorCount() {
         return doctorRepository.count();
     }
 
+    @Override
+    public List<TopDoctorDto> getTop5DoctorsByPrescriptions() {
+        try {
+            System.out.println("🔍 Starting getTop5DoctorsByPrescriptions...");
 
+            // Get all doctors
+            List<Doctor> allDoctors = doctorRepository.findAll();
+            System.out.println("📊 Found " + allDoctors.size() + " doctors in database");
+
+            if (allDoctors.isEmpty()) {
+                System.out.println("⚠️ No doctors found in database");
+                return new ArrayList<>();
+            }
+
+            // Create a list with prescription counts
+            List<TopDoctorDto> doctorsWithCounts = new ArrayList<>();
+
+            for (Doctor doctor : allDoctors) {
+                try {
+                    // Count prescriptions for each doctor
+                    long prescriptionCount = prescriptionRepository.countByDoctorId(doctor.getDoctorId());
+                    System.out.println("👨‍⚕️ Doctor: " + doctor.getDoctorName() + " (" + doctor.getDoctorId() + ") - Prescriptions: " + prescriptionCount);
+
+                    if (prescriptionCount > 0) { // Only include doctors with prescriptions
+                        TopDoctorDto topDoctorDto = new TopDoctorDto();
+                        topDoctorDto.setId(doctor.getId());
+                        topDoctorDto.setDoctorId(doctor.getDoctorId());
+                        topDoctorDto.setNmrId(doctor.getNmrId());
+                        topDoctorDto.setDoctorName(doctor.getDoctorName());
+                        topDoctorDto.setSpecialty(doctor.getSpecialty());
+                        topDoctorDto.setEmail(doctor.getEmail());
+                        topDoctorDto.setPassword(doctor.getPassword()); // Consider removing in production
+                        topDoctorDto.setPhone(doctor.getPhone());
+                        topDoctorDto.setStatus(doctor.getStatus());
+                        topDoctorDto.setBio(doctor.getBio());
+                        topDoctorDto.setEducation(doctor.getEducation());
+                        topDoctorDto.setExperience(doctor.getExperience());
+
+                        // Convert languages list to comma-separated string
+                        String languageStr = doctor.getLanguages() != null
+                                ? String.join(", ", doctor.getLanguages())
+                                : null;
+                        topDoctorDto.setLanguages(languageStr);
+
+                        topDoctorDto.setPhotoUrl(doctor.getPhotoUrl());
+                        topDoctorDto.setDepartmentId(doctor.getDepartmentId());
+                        topDoctorDto.setPrescriptionCount(prescriptionCount);
+
+                        doctorsWithCounts.add(topDoctorDto);
+                    }
+                } catch (Exception e) {
+                    System.err.println("❌ Error processing doctor " + doctor.getDoctorId() + ": " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+
+            System.out.println("📈 Found " + doctorsWithCounts.size() + " doctors with prescriptions");
+
+            // Sort by prescription count (descending) and limit to top 5
+            List<TopDoctorDto> top5Doctors = doctorsWithCounts.stream()
+                    .sorted((d1, d2) -> Long.compare(d2.getPrescriptionCount(), d1.getPrescriptionCount()))
+                    .limit(5)
+                    .collect(Collectors.toList());
+
+            System.out.println("🏆 Returning top " + top5Doctors.size() + " doctors");
+            for (TopDoctorDto doctor : top5Doctors) {
+                System.out.println("   - " + doctor.getDoctorName() + ": " + doctor.getPrescriptionCount() + " prescriptions");
+            }
+
+            return top5Doctors;
+
+        } catch (Exception e) {
+            System.err.println("❌ Error getting top doctors by prescriptions: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to get top doctors by prescriptions: " + e.getMessage(), e);
+        }
+    }
 }
+
+
+

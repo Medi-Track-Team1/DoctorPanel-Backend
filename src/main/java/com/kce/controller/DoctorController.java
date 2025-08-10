@@ -2,6 +2,7 @@ package com.kce.controller;
 
 import java.util.List;
 
+import com.kce.dto.TopDoctorDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -79,6 +80,41 @@ public ResponseEntity<DoctorDto> createdoctor(
 		long count = doctorService.getDoctorCount();
 		return ResponseEntity.ok(count);
 	}
+	@GetMapping("/top-doctors-by-prescriptions")
+	public ResponseEntity<?> getTop5DoctorsByPrescriptions() {
+		try {
+			List<TopDoctorDto> topDoctors = doctorService.getTop5DoctorsByPrescriptions();
 
+			if (topDoctors.isEmpty()) {
+				return ResponseEntity.ok()
+						.body(createSuccessResponse("No doctors found with prescriptions", topDoctors));
+			}
+
+			return ResponseEntity.ok(topDoctors);
+
+		} catch (Exception e) {
+			System.err.println("Error fetching top doctors by prescriptions: " + e.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(createErrorResponse("Failed to fetch top doctors: " + e.getMessage()));
+		}
+	}
+
+	// Helper methods for consistent responses
+	private java.util.Map<String, Object> createErrorResponse(String message) {
+		java.util.Map<String, Object> response = new java.util.HashMap<>();
+		response.put("success", false);
+		response.put("message", message);
+		response.put("timestamp", System.currentTimeMillis());
+		return response;
+	}
+
+	private java.util.Map<String, Object> createSuccessResponse(String message, Object data) {
+		java.util.Map<String, Object> response = new java.util.HashMap<>();
+		response.put("success", true);
+		response.put("message", message);
+		response.put("data", data);
+		response.put("timestamp", System.currentTimeMillis());
+		return response;
+	}
 
 }
