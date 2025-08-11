@@ -39,11 +39,19 @@ public class DoctorController {
 	
 @PostMapping(consumes = {"multipart/form-data"})
 public ResponseEntity<DoctorDto> createdoctor(
-        @RequestPart("doctor") DoctorDto doctorDto,
+        @RequestPart("doctor") String doctorJson, // Change this to String
         @RequestPart(value = "photo", required = false) MultipartFile profilePhoto) {
-
-    DoctorDto savedDoctor = doctorService.createDoctor(doctorDto, profilePhoto);
-    return new ResponseEntity<>(savedDoctor, HttpStatus.CREATED);
+    
+    try {
+        // Parse the JSON string to DoctorDto
+        ObjectMapper mapper = new ObjectMapper();
+        DoctorDto doctorDto = mapper.readValue(doctorJson, DoctorDto.class);
+        
+        DoctorDto savedDoctor = doctorService.createDoctor(doctorDto, profilePhoto);
+        return new ResponseEntity<>(savedDoctor, HttpStatus.CREATED);
+    } catch (Exception e) {
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
 }
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<DoctorDto> createDoctorJson(@RequestBody DoctorDto doctorDto) {
@@ -120,5 +128,6 @@ public ResponseEntity<DoctorDto> createdoctor(
 	}
 
 }
+
 
 
