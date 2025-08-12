@@ -18,8 +18,8 @@ import java.util.HashMap;
 @CrossOrigin(
         origins = {
                 "http://localhost:5174",
-                "http://localhost:5175",
-                "https://your-frontend-domain.com"
+                "http://localhost:5175"
+                // Removed "https://your-frontend-domain.com" and any wildcard origins
         },
         allowedHeaders = "*",
         allowCredentials = "true",
@@ -31,7 +31,6 @@ import java.util.HashMap;
                 RequestMethod.OPTIONS
         }
 )
-
 public class PrescriptionController {
 
     private static final Logger logger = LoggerFactory.getLogger(PrescriptionController.class);

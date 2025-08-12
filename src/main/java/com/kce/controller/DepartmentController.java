@@ -12,7 +12,7 @@ import java.util.List;
         origins = {
                 "http://localhost:5174",
                 "http://localhost:5175"
-
+                // Removed any wildcard (*) origins
         },
         allowedHeaders = "*",
         allowCredentials = "true",

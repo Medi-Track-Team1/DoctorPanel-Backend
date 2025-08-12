@@ -17,42 +17,39 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @RestController
-
 @RequestMapping("/api/doctor")
 @CrossOrigin(
 		origins = {
 				"http://localhost:5174",
-				"http://localhost:5175",
-		      	"*"
-
+				"http://localhost:5175"
+				// Removed the "*" - this was causing the error
 		},
 		allowedHeaders = "*",
 		allowCredentials = "true",
 		methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS}
 )
 public class DoctorController {
-@Autowired
-	
+
+	@Autowired
 	private DoctorService doctorService;
-	
-	
-	
-@PostMapping(consumes = {"multipart/form-data"})
-public ResponseEntity<DoctorDto> createdoctor(
-        @RequestPart("doctor") String doctorJson, // Change this to String
-        @RequestPart(value = "photo", required = false) MultipartFile profilePhoto) {
-    
-    try {
-        // Parse the JSON string to DoctorDto
-        ObjectMapper mapper = new ObjectMapper();
-        DoctorDto doctorDto = mapper.readValue(doctorJson, DoctorDto.class);
-        
-        DoctorDto savedDoctor = doctorService.createDoctor(doctorDto, profilePhoto);
-        return new ResponseEntity<>(savedDoctor, HttpStatus.CREATED);
-    } catch (Exception e) {
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
-}
+
+	@PostMapping(consumes = {"multipart/form-data"})
+	public ResponseEntity<DoctorDto> createdoctor(
+			@RequestPart("doctor") String doctorJson,
+			@RequestPart(value = "photo", required = false) MultipartFile profilePhoto) {
+
+		try {
+			// Parse the JSON string to DoctorDto
+			ObjectMapper mapper = new ObjectMapper();
+			DoctorDto doctorDto = mapper.readValue(doctorJson, DoctorDto.class);
+
+			DoctorDto savedDoctor = doctorService.createDoctor(doctorDto, profilePhoto);
+			return new ResponseEntity<>(savedDoctor, HttpStatus.CREATED);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<DoctorDto> createDoctorJson(@RequestBody DoctorDto doctorDto) {
 		return new ResponseEntity<>(doctorService.createDoctor(doctorDto, null), HttpStatus.CREATED);
@@ -62,16 +59,19 @@ public ResponseEntity<DoctorDto> createdoctor(
 	public ResponseEntity<List<DoctorDto>> getDoctorsBySpecialty(@RequestParam String specialty) {
 		return ResponseEntity.ok(doctorService.getDoctorsBySpecialty(specialty));
 	}
+
 	@GetMapping("/{id}")
 	public ResponseEntity<DoctorDto> getDoctorById(@PathVariable("id") String doctorId) {
-	    DoctorDto doctorDto = doctorService.getDoctorById(doctorId);
-	    return new ResponseEntity<>(doctorDto, HttpStatus.OK);
+		DoctorDto doctorDto = doctorService.getDoctorById(doctorId);
+		return new ResponseEntity<>(doctorDto, HttpStatus.OK);
 	}
+
 	@GetMapping
 	public ResponseEntity<List<DoctorDto>> getAllDoctors() {
-	    List<DoctorDto> doctors = doctorService.getAllDoctors();
-	    return new ResponseEntity<>(doctors, HttpStatus.OK);
+		List<DoctorDto> doctors = doctorService.getAllDoctors();
+		return new ResponseEntity<>(doctors, HttpStatus.OK);
 	}
+
 	@PutMapping("/{id}")
 	public ResponseEntity<DoctorDto> updateDoctor(
 			@PathVariable("id") String doctorId,
@@ -85,11 +85,13 @@ public ResponseEntity<DoctorDto> createdoctor(
 		doctorService.deleteDoctor(doctorId);
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
+
 	@GetMapping("/count")
 	public ResponseEntity<Long> getDoctorCount() {
 		long count = doctorService.getDoctorCount();
 		return ResponseEntity.ok(count);
 	}
+
 	@GetMapping("/top-doctors-by-prescriptions")
 	public ResponseEntity<?> getTop5DoctorsByPrescriptions() {
 		try {
@@ -126,8 +128,4 @@ public ResponseEntity<DoctorDto> createdoctor(
 		response.put("timestamp", System.currentTimeMillis());
 		return response;
 	}
-
 }
-
-
-
